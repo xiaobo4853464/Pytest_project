@@ -8,7 +8,7 @@ def test1(people):
 
 
 
-# ============= with ids
+# ============ with ids
 people2 = [('male', 21), ('female', 31)]
 people2_id = ['{},{}'.format(p[0], p[1]) for p in people2]
 
