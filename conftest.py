@@ -117,6 +117,7 @@ def pytest_itemcollected(item):
     # modify test case name
     item._nodeid = item.nodeid + "\n"
 
+
 # def pytest_generate_tests(metafunc):
 #     # called once per each test function
 #     test_module_path = metafunc.module.__file__
@@ -129,3 +130,9 @@ def pytest_itemcollected(item):
 #     if not isinstance(test_data, list):
 #         test_data = [test_data]
 #     metafunc.parametrize(function_name, test_data)
+
+def pytest_collection_modifyitems(session, config, items):
+    """ called after collection is completed
+        you can modify the ``items`` list
+    """
+    print(session, config, items)
