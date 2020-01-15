@@ -4,6 +4,8 @@ from functools import wraps
 import pytest
 
 from lib.base_test_case import get_testdata
+from _pytest.runner import runtestprotocol
+from _pytest.runner import pytest_runtest_makereport
 
 
 @pytest.fixture()
@@ -74,9 +76,23 @@ def my_fixture(tmpdir):
 #     print("pytest_runtest_teardown:", item, nextitem)
 #
 #
-# def pytest_runtest_makereport(item, call):
-#     print("runtest_makereport: ", item, call)
-#
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, "rep_" + rep.when, rep)
+    if rep.when == 'call':
+        if rep.failed:
+            pass
+            # ui test
+            # if browser_option.screen_shot:
+            #     report_dir = browser_option.report_dir
+            #     picture_name = item.name + '.png'
+            #     picture_path = join(report_dir, picture_name)
+            #     context.browser.save_screenshot(picture_path)
+
+
 #
 # def pytest_collectstart(collector):
 #     '''collector starts collecting.'''
@@ -97,16 +113,19 @@ def my_fixture(tmpdir):
 #     '''process a test setup/call/teardown report relating to the respective phase of executing a test.'''
 #     print(report)
 
+def pytest_itemcollected(item):
+    # modify test case name
+    item._nodeid = item.nodeid + "\n"
 
-def pytest_generate_tests(metafunc):
-    # called once per each test function
-    test_module_path = metafunc.module.__file__
-    function_name = metafunc.function.__name__
-    test_data = get_testdata(test_module_path, function_name)
-    # arg1=["case1_name","case2_name"]
-    # arg2=["case1_data","case2_data"]
-    """ [[1, 2], [3, 3]]"""
-    # metafunc.parametrize(arg1,arg2)
-    if not isinstance(test_data, list):
-        test_data = [test_data]
-    metafunc.parametrize(function_name, test_data)
+# def pytest_generate_tests(metafunc):
+#     # called once per each test function
+#     test_module_path = metafunc.module.__file__
+#     function_name = metafunc.function.__name__
+#     test_data = get_testdata(test_module_path, function_name)
+#     # arg1=["case1_name","case2_name"]
+#     # arg2=["case1_data","case2_data"]
+#     """ [[1, 2], [3, 3]]"""
+#     # metafunc.parametrize(arg1,arg2)
+#     if not isinstance(test_data, list):
+#         test_data = [test_data]
+#     metafunc.parametrize(function_name, test_data)
