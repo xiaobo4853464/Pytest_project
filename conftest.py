@@ -118,6 +118,19 @@ def pytest_itemcollected(item):
     item._nodeid = item.nodeid + "\n"
 
 
+# do some ignore
+def pytest_ignore_collect(path, config):
+    if "cases" == path.basename:
+        return True  # true mean ignore
+    return False  # false mean collect
+    # if "cases2" in path.basename:
+    #     print(path.basename)
+    #     return True
+    # else:
+    #     # true means is ignore
+    #     return False
+
+
 # def pytest_generate_tests(metafunc):
 #     # called once per each test function
 #     test_module_path = metafunc.module.__file__

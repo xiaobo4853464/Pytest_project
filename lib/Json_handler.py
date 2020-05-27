@@ -3,6 +3,7 @@ Created on Aug 10, 2018
 
 @author: xiaos5
 '''
+from lib.dictFormat import dict_format, change_dict_key_pattern, exclude_str_root
 
 '''
 jsonpath expression:
@@ -15,11 +16,7 @@ import json
 import os
 
 from deepdiff import DeepDiff
-from jsonpath_ng.ext import parse
-
-from framework.libs import parser
-from framework.libs.dictFormat import dict_format, change_dict_key_pattern, \
-    exclude_str_root
+from jsonpath_ng.ext import parse, parser
 
 # from libs.diff import DeepDiff
 projectPath = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
