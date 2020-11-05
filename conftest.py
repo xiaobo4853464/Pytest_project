@@ -121,9 +121,12 @@ def some_data2():
 def get_reruns_count(item):
     return 2
 
+
 def get_reruns_delay(item):
     return 3
 
+
+# 决定重试次数和时间
 pytest_rerunfailures.get_reruns_count = get_reruns_count
 pytest_rerunfailures.get_reruns_delay = get_reruns_delay
 
