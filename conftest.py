@@ -2,6 +2,7 @@
 from functools import wraps
 
 import pytest
+import pytest_rerunfailures
 
 from lib.base_test_case import get_testdata
 from _pytest.runner import runtestprotocol
@@ -25,11 +26,11 @@ def some_data2():
 #     print("session teardown")
 
 
-@pytest.fixture(scope="function")
-def my_fixture(tmpdir):
-    print("function setup")
-    yield
-    print("function teardown")
+# @pytest.fixture(scope="function")
+# def my_fixture(tmpdir):
+#     print("function setup")
+#     yield
+#     print("function teardown")
 
 
 # def pytest_sessionstart(session):
@@ -77,20 +78,20 @@ def my_fixture(tmpdir):
 #
 #
 
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    rep = outcome.get_result()
-    setattr(item, "rep_" + rep.when, rep)
-    if rep.when == 'call':
-        if rep.failed:
-            pass
-            # ui test
-            # if browser_option.screen_shot:
-            #     report_dir = browser_option.report_dir
-            #     picture_name = item.name + '.png'
-            #     picture_path = join(report_dir, picture_name)
-            #     context.browser.save_screenshot(picture_path)
+# @pytest.hookimpl(hookwrapper=True, tryfirst=True)
+# def pytest_runtest_makereport(item, call):
+#     outcome = yield
+#     rep = outcome.get_result()
+#     setattr(item, "rep_" + rep.when, rep)
+#     if rep.when == 'call':
+#         if rep.failed:
+#             pass
+#             # ui test
+#             # if browser_option.screen_shot:
+#             #     report_dir = browser_option.report_dir
+#             #     picture_name = item.name + '.png'
+#             #     picture_path = join(report_dir, picture_name)
+#             #     context.browser.save_screenshot(picture_path)
 
 
 #
@@ -113,22 +114,25 @@ def pytest_runtest_makereport(item, call):
 #     '''process a test setup/call/teardown report relating to the respective phase of executing a test.'''
 #     print(report)
 
-def pytest_itemcollected(item):
-    # modify test case name
-    item._nodeid = item.nodeid + "\n"
+# def pytest_itemcollected(item):
+#     # modify test case name
+#     item._nodeid = item.nodeid + "\n"
+
+def get_reruns_count(item):
+    return 2
+
+def get_reruns_delay(item):
+    return 3
+
+pytest_rerunfailures.get_reruns_count = get_reruns_count
+pytest_rerunfailures.get_reruns_delay = get_reruns_delay
 
 
 # do some ignore
-def pytest_ignore_collect(path, config):
-    if "cases" == path.basename:
-        return True  # true mean ignore
-    return False  # false mean collect
-    # if "cases2" in path.basename:
-    #     print(path.basename)
-    #     return True
-    # else:
-    #     # true means is ignore
-    #     return False
+# def pytest_ignore_collect(path, config):
+#     if "cases" == path.basename:
+#         return True  # true mean ignore
+#     return False  # false mean collect
 
 
 # def pytest_generate_tests(metafunc):
