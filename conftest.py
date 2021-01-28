@@ -1,4 +1,5 @@
 # check fixture execute with cmd '--setup-show'
+import signal
 from functools import wraps
 
 import pytest
@@ -40,9 +41,38 @@ def some_data2():
 # def pytest_sessionfinish(session):
 #     print("session_finish")
 
-# def pytest_runtest_setup(item):
-#     # called for running each test in 'a' directory
-#     print("each test case:", item)
+# 会在pytest自己的框架上包装，tryfirst=True 执行先执行自己的hook
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_setup(item):
+    # called for running each test in 'a' directory
+    # cur_result = result.setdefault(get_raw_id(item), {})
+    # cur_result[len(cur_result) + 1] = {
+    #     'setup': False,
+    #     'call': False,
+    #     'teardown': False,
+    #     'start': t,
+    #     'spend': 0
+    # }
+    # print("each test case:", item)
+    set_signal()
+    out = yield
+
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_call(item):
+    set_signal()
+    out = yield
+    # release_signal()
+
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_teardown(item, nextitem):
+    print(item, nextitem)
+    set_signal()
+    out = yield
+    # release_signal()
+
+
 #
 #
 # def pytest_configure(config):
@@ -64,20 +94,6 @@ def some_data2():
 # def pytest_runtest_setup(item):
 #     print("runtest_setup: ", item)
 #
-#
-# def pytest_runtest_call(item):
-#     print("runtest_call: ", item)
-#
-#
-# def pytest_runtest_teardown(item):
-#     print("runtest_teardown: ", item)
-#
-#
-# def pytest_runtest_teardown(item, nextitem):
-#     print("pytest_runtest_teardown:", item, nextitem)
-#
-#
-
 # @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 # def pytest_runtest_makereport(item, call):
 #     outcome = yield
@@ -127,9 +143,8 @@ def get_reruns_delay(item):
 
 
 # 决定重试次数和时间
-pytest_rerunfailures.get_reruns_count = get_reruns_count
-pytest_rerunfailures.get_reruns_delay = get_reruns_delay
-
+# pytest_rerunfailures.get_reruns_count = get_reruns_count
+# pytest_rerunfailures.get_reruns_delay = get_reruns_delay
 
 # do some ignore
 # def pytest_ignore_collect(path, config):
@@ -151,8 +166,24 @@ pytest_rerunfailures.get_reruns_delay = get_reruns_delay
 #         test_data = [test_data]
 #     metafunc.parametrize(function_name, test_data)
 
-def pytest_collection_modifyitems(session, config, items):
-    """ called after collection is completed
-        you can modify the ``items`` list
-    """
-    print(session, config, items)
+# def pytest_collection_modifyitems(session, config, items):
+#     """ called after collection is completed
+#         you can modify the ``items`` list
+#     """
+#     print(session, config, items)
+
+time_out = 5
+
+
+def set_signal():
+    signal.signal(signal.SIGALRM, timeout_func)
+    signal.setitimer(signal.ITIMER_REAL, time_out)
+
+
+def release_signal():
+    signal.setitimer(signal.ITIMER_REAL, 0)
+    signal.signal(signal.SIGALRM, signal.SIG_DFL)
+
+
+def timeout_func(signum, frame):
+    pytest.fail('用例运行超时，当前超时时间设置为{}秒'.format(time_out))
