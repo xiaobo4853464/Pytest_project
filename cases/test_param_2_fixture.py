@@ -12,8 +12,9 @@ def login(request):
     print("post:", user)
 
 
-@pytest.mark.parametrize("login", test_user_data, indirect=True)  # 添加indirect=True参数是为了把login当成一个函数去执行，而不是一个参数
-def test_login(login):
-    """test case"""
-    u = login
-    print("process", u)
+class TestParam2fixture(object):
+    @pytest.mark.parametrize("login", test_user_data, indirect=True)  # 添加indirect=True参数是为了把login当成一个函数去执行，而不是一个参数
+    def test_login(self, login):
+        """test case"""
+        u = login
+        print("process", u)
