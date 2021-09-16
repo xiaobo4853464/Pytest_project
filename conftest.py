@@ -6,6 +6,7 @@ import pytest
 import pytest_rerunfailures
 from _pytest.fixtures import resolve_fixture_function, FixtureDef, SubRequest
 
+from lib.Dict import Dict
 from lib.base_test_case import get_testdata
 from _pytest.runner import runtestprotocol
 from _pytest.runner import pytest_runtest_makereport
@@ -165,7 +166,8 @@ def pytest_generate_tests(metafunc):
     test_module_path = metafunc.module.__file__
     function_name = metafunc.function.__name__
     test_data = get_testdata(test_module_path, function_name)
-    metafunc.parametrize("data", test_data)
+    test_data_ = [Dict(i) for i in test_data]
+    metafunc.parametrize("data", test_data_)
 
 
 def pytest_collection_modifyitems(session, config, items):
