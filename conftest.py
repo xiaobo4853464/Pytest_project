@@ -4,10 +4,12 @@ from functools import wraps
 
 import pytest
 import pytest_rerunfailures
+from _pytest.fixtures import resolve_fixture_function, FixtureDef, SubRequest
 
 from lib.base_test_case import get_testdata
 from _pytest.runner import runtestprotocol
 from _pytest.runner import pytest_runtest_makereport
+from _pytest.fixtures import pytest_fixture_setup as pfs
 
 
 @pytest.fixture()
@@ -54,22 +56,29 @@ def pytest_runtest_setup(item):
     #     'spend': 0
     # }
     # print("each test case:", item)
-    set_signal()
+    # set_signal()
     out = yield
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_call(item):
-    set_signal()
+    # set_signal()
     out = yield
+    # if out:
+    #     pass
     # release_signal()
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_teardown(item, nextitem):
-    print(item, nextitem)
-    set_signal()
+    # print(item, nextitem)
+    # set_signal()
     out = yield
+    # for m in item.cls.pytestmark:
+    #     if 'dependence' == m.name:
+    #         global G_FAILED
+    #         if G_FAILED:
+    #             pytest.fail("dependence")
     # release_signal()
 
 
@@ -94,20 +103,18 @@ def pytest_runtest_teardown(item, nextitem):
 # def pytest_runtest_setup(item):
 #     print("runtest_setup: ", item)
 #
-# @pytest.hookimpl(hookwrapper=True, tryfirst=True)
-# def pytest_runtest_makereport(item, call):
-#     outcome = yield
-#     rep = outcome.get_result()
-#     setattr(item, "rep_" + rep.when, rep)
-#     if rep.when == 'call':
-#         if rep.failed:
-#             pass
-#             # ui test
-#             # if browser_option.screen_shot:
-#             #     report_dir = browser_option.report_dir
-#             #     picture_name = item.name + '.png'
-#             #     picture_path = join(report_dir, picture_name)
-#             #     context.browser.save_screenshot(picture_path)
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, "rep_" + rep.when, rep)
+
+    # # ui test
+    # if browser_option.screen_shot:
+    #     report_dir = browser_option.report_dir
+    #     picture_name = item.name + '.png'
+    #     picture_path = join(report_dir, picture_name)
+    #     context.browser.save_screenshot(picture_path)
 
 
 #
@@ -153,26 +160,23 @@ def get_reruns_delay(item):
 #     return False  # false mean collect
 
 
-# def pytest_generate_tests(metafunc):
-#     # called once per each test function
-#     test_module_path = metafunc.module.__file__
-#     function_name = metafunc.function.__name__
-#     test_data = get_testdata(test_module_path, function_name)
-#     # arg1=["case1_name","case2_name"]
-#     # arg2=["case1_data","case2_data"]
-#     """ [[1, 2], [3, 3]]"""
-#     # metafunc.parametrize(arg1,arg2)
-#     if not isinstance(test_data, list):
-#         test_data = [test_data]
-#     metafunc.parametrize(function_name, test_data)
+def pytest_generate_tests(metafunc):
+    # data driven
+    test_module_path = metafunc.module.__file__
+    function_name = metafunc.function.__name__
+    test_data = get_testdata(test_module_path, function_name)
+    metafunc.parametrize("data", test_data)
 
-# def pytest_collection_modifyitems(session, config, items):
-#     """ called after collection is completed
-#         you can modify the ``items`` list
-#     """
-#     print(session, config, items)
 
-time_out = 5
+def pytest_collection_modifyitems(session, config, items):
+    """ called after collection is completed
+        you can modify the ``items`` list
+    """
+    pass
+    # print(session, config, items, )
+
+
+time_out = 100000000
 
 
 def set_signal():
@@ -186,4 +190,33 @@ def release_signal():
 
 
 def timeout_func(signum, frame):
-    pytest.fail('用例运行超时，当前超时时间设置为{}秒'.format(time_out))
+    pytest.fail('test case timeout，current timeout is {}s'.format(time_out))
+
+
+# @pytest.hookimpl(hookwrapper=True, tryfirst=True)
+# def pytest_fixture_setup(fixturedef: FixtureDef[_FixtureValue], request: SubRequest):
+#     pfs(fixturedef,request)
+#     print(1)
+#     kwargs = {}
+#     # for argname in fixturedef.argnames:
+#     #     fixdef = request._get_active_fixturedef(argname)
+#     #     assert fixdef.cached_result is not None
+#     #     result, arg_cache_key, exc = fixdef.cached_result
+#     #     request._check_scope(argname, request.scope, fixdef.scope)
+#     #     kwargs[argname] = result
+#
+#     fixturefunc = resolve_fixture_function(fixturedef, request)
+#     my_cache_key = fixturedef.cache_key(request)
+#     try:
+#         result = call_fixture_func(fixturefunc, request, kwargs)
+#     except TEST_OUTCOME:
+#         exc_info = sys.exc_info()
+#         assert exc_info[0] is not None
+#         fixturedef.cached_result = (None, my_cache_key, exc_info)
+#         raise
+#     fixturedef.cached_result = (result, my_cache_key, None)
+#     return result
+
+@pytest.fixture()
+def cls_f(request):
+    print(1)
