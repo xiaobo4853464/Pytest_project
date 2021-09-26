@@ -248,8 +248,10 @@ class BaseTestCase(object):
 
 def get_testdata(file_path, function_name):
     test_data_path = file_path.replace("cases", "testdata").replace(".py", ".json")
+    if os.path.exists(test_data_path):
+        expr_with_testcase = "$..%s" % function_name.lower()
+        testdata = jsonFile_get(test_data_path, expr_with_testcase)
+        return testdata
+    else:
+        return None
 
-    expr_with_testcase = "$..%s" % function_name.lower()
-    testdata = jsonFile_get(test_data_path, expr_with_testcase)
-
-    return testdata
