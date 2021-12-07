@@ -1,5 +1,6 @@
 # check fixture execute with cmd '--setup-show'
 import signal
+import sys
 from functools import wraps
 
 import pytest
@@ -37,8 +38,12 @@ def some_data2():
 #     print("function teardown")
 
 
-# def pytest_sessionstart(session):
-#     print("session_start")
+def pytest_sessionstart(session):
+    print("session_start")
+    print(session.config.getoption("--xb"))
+    sys.argv.append("--ignore=cases/mock")
+
+
 #
 #
 # def pytest_sessionfinish(session):
@@ -86,7 +91,9 @@ def pytest_runtest_teardown(item, nextitem):
 #
 #
 # def pytest_configure(config):
-#     print("start config")
+#     config.addinivalue_line(
+#         "markers", "xbxb: test xbxb"
+#     )
 #
 #
 # def pytest_cmdline_main(config):
@@ -104,18 +111,18 @@ def pytest_runtest_teardown(item, nextitem):
 # def pytest_runtest_setup(item):
 #     print("runtest_setup: ", item)
 #
-@pytest.hookimpl(hookwrapper=True, tryfirst=True)
-def pytest_runtest_makereport(item, call):
-    outcome = yield
-    rep = outcome.get_result()
-    setattr(item, "rep_" + rep.when, rep)
+# @pytest.hookimpl(hookwrapper=True, tryfirst=True)
+# def pytest_runtest_makereport(item, call):
+#     outcome = yield
+#     rep = outcome.get_result()
+#     setattr(item, "rep_" + rep.when, rep)
 
-    # # ui test
-    # if browser_option.screen_shot:
-    #     report_dir = browser_option.report_dir
-    #     picture_name = item.name + '.png'
-    #     picture_path = join(report_dir, picture_name)
-    #     context.browser.save_screenshot(picture_path)
+# # ui test
+# if browser_option.screen_shot:
+#     report_dir = browser_option.report_dir
+#     picture_name = item.name + '.png'
+#     picture_path = join(report_dir, picture_name)
+#     context.browser.save_screenshot(picture_path)
 
 
 #
@@ -220,6 +227,9 @@ def timeout_func(signum, frame):
 #     fixturedef.cached_result = (result, my_cache_key, None)
 #     return result
 
-@pytest.fixture()
-def cls_f(request):
-    print(1)
+# 注册自定义参数 cmdopt 到配置对象
+def pytest_addoption(parser):
+    parser.addoption("--xb",
+                     action="store",
+                     default="None",
+                     help="将自定义命令行参数 ’--cmdopt' 添加到 pytest 配置中")

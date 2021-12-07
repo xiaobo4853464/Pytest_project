@@ -2,7 +2,7 @@ import inspect
 import os
 from functools import wraps
 
-from lib.Json_handler import json_get, jsonFile_get
+from lib.json_handler import json_get, json_file_get
 
 import inspect
 
@@ -249,9 +249,9 @@ class BaseTestCase(object):
 def get_testdata(file_path, function_name):
     test_data_path = file_path.replace("cases", "testdata").replace(".py", ".json")
     if os.path.exists(test_data_path):
-        expr_with_testcase = "$..%s" % function_name.lower()
-        testdata = jsonFile_get(test_data_path, expr_with_testcase)
-        return testdata
+        expr_with_testcase = "$..%s" % function_name
+        test_data = json_file_get(test_data_path, expr_with_testcase)
+        return test_data
     else:
         return None
 

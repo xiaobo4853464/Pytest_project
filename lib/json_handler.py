@@ -1,16 +1,10 @@
-'''
-Created on Aug 10, 2018
-
-@author: xiaos5
-'''
-from lib.dictFormat import dict_format, change_dict_key_pattern, exclude_str_root
-
-'''
+"""
 jsonpath expression:
     https://www.pluralsight.com/blog/tutorials/introduction-to-jsonpath
 online tool for testing your json path:
     http://jsonpath.com/
-'''
+"""
+from lib.dictFormat import dict_format, change_dict_key_pattern, exclude_str_root
 
 import json
 import os
@@ -18,30 +12,14 @@ import os
 from deepdiff import DeepDiff
 from jsonpath_ng.ext import parse, parser
 
-# from libs.diff import DeepDiff
 projectPath = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
 
 
-def json_get(json, jsonPath):
-    '''
-    get value form json content with jsonpath
-    :json: 
-        json string
-    :jsonPath:
-        jsonpath expression string
-        
-    return:
-        string
-    example:
-        json = {"team":{"number":10,"tester":"vivian"}}
-        jsonPath = "$..tester"
-        return: vivian
-    '''
+def json_get(data: dict, jsonPath):
     try:
-        jsonPath_expr = parse(jsonPath)
-        __find = jsonPath_expr.find(json)
+        json_path_expr = parse(jsonPath)
+        __find = json_path_expr.find(data)
         if len(__find) == 0:
-            # print "%s is not in %s" %(jsonPath, json)
             raise KeyError
         elif len(__find) == 1:
             return __find[0].value
@@ -51,40 +29,16 @@ def json_get(json, jsonPath):
         return None
 
 
-def jsonFile_get(json_file_path, jsonPath):
-    '''
-    get value form json file with jsonpath based on call json_get(json, jsonPath)
-    :json_file_path:
-        json file path string
-    :jsonPath:
-        jsonpath expression string
-    return:
-        string
-    example:
-        json_file_path = "/home/vivian/test.json"
-        jsonPath = "$..tester"
-        return: vivian
-    '''
-    filePath = os.path.join(projectPath, json_file_path)
-    #     jsonFile = open(filePath, "r")
-    #     jsonContent = json.load(jsonFile)
-    #     json_content = json_get(jsonContent, jsonPath)
-    #     if json_content is None:
-    #         print("Not found mathed keys with jsonpath %s in file %s"\
-    #               % (jsonPath, json_file_path))
-    #     return json_content
-
-    with open(filePath, "r") as jsonFile:
-        jsonContent = json.load(jsonFile)
-        json_content = json_get(jsonContent, jsonPath)
-        if json_content is None:
-            print("Not found mathed keys with jsonpath %s in file %s" \
-                  % (jsonPath, json_file_path))
+def json_file_get(json_file_path, expr):
+    path = os.path.join(projectPath, json_file_path)
+    with open(path, "r") as f:
+        data = json.load(f)
+        json_content = json_get(data, expr)
         return json_content
 
 
 def jsonFile_set(json_file_path, jsonPath, new_value):
-    '''
+    """
     get value form json content with jsonpath
     :json_file_path: 
         json file path string
@@ -107,7 +61,7 @@ def jsonFile_set(json_file_path, jsonPath, new_value):
         content in json file:
         {"team":{"number":10,"tester":"grady"}}
         
-    '''
+    """
     filePath = os.path.join(projectPath, json_file_path)
 
     def get_updated_content(jsonContent):
@@ -161,9 +115,9 @@ def json_get_with_priority(json_content, find_keys):
 
 
 def assertJson(expected, actual, ignore_compare_order=False):
-    '''
+    """
     compare 2 dict
-    '''
+    """
 
     def string2unicode(innest_dict):
         for k, v in innest_dict.items():
@@ -188,9 +142,9 @@ def assertJson(expected, actual, ignore_compare_order=False):
 
 
 def format_json_compare_list(d_list):
-    '''
+    """
     format compared result list bsed on the list of return by assertJson(expected, actual, ignore_compare_order=False)
-    '''
+    """
     try:
         for key, compare_result in d_list.iteritems():
             d_list[key] = format_json_compare(compare_result)
@@ -200,7 +154,7 @@ def format_json_compare_list(d_list):
 
 
 def format_json_compare(_dict):
-    '''
+    """
     format compared result list bsed on the return of assertJson(expected, actual, ignore_compare_order=False)
     @example:
     _dict = 
@@ -225,7 +179,7 @@ def format_json_compare(_dict):
             }
         }
     }
-    '''
+    """
     formated_dict = {}
     origin_dict = _dict
     if _dict.has_key("values_changed"):
