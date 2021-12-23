@@ -8,5 +8,10 @@
         "aa": 1
       }
     }
+  ],
+  "test_fixture_get_data_from_data_driven": [
+    {
+      "data": "helloworld"
+    }
   ]
 }

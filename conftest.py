@@ -203,6 +203,11 @@ def timeout_func(signum, frame):
     pytest.fail('test case timeout，current timeout is {}s'.format(time_out))
 
 
+@pytest.fixture()
+def get_data_from_json(request):
+    print("print from fixture:", request.node.funcargs)
+
+
 # @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 # def pytest_fixture_setup(fixturedef: FixtureDef[_FixtureValue], request: SubRequest):
 #     pfs(fixturedef,request)
