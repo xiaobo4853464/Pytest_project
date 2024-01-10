@@ -1,0 +1,5 @@
+# cmt
+test_case1:
+- a: '{"aa": 1}'
+- a:
+    aa: 1

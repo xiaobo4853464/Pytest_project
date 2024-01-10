@@ -29,13 +29,18 @@ def json_get(data: dict, jsonPath):
         return None
 
 
-def json_file_get(json_file_path, expr):
-    path = os.path.join(projectPath, json_file_path)
-    with open(path, "r") as f:
-        data = json.load(f)
-        json_content = json_get(data, expr)
-        return json_content
+# def json_file_get(json_file_path, expr):
+#     path = os.path.join(projectPath, json_file_path)
+#     with open(path, "r") as f:
+#         data = json.load(f)
+#         json_content = json_get(data, expr)
+#         return json_content
 
+def json_file_get(json_file_path):
+    path = os.path.join(projectPath, json_file_path)
+    with open(path) as f:
+        return json.load(f)
+        # json_content = json_get(data, expr)
 
 def jsonFile_set(json_file_path, jsonPath, new_value):
     """

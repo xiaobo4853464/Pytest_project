@@ -1,5 +1,6 @@
 import inspect
 import os
+import yaml
 from functools import wraps
 
 from lib.json_handler import json_get, json_file_get
@@ -245,13 +246,25 @@ class BaseTestCase(object):
             raise error
 
 
-
-def get_testdata(file_path, function_name):
-    test_data_path = file_path.replace("cases", "testdata").replace(".py", ".json")
+def get_testdata(file_path, function_name, file_type='json'):
+    if file_type not in ['json', 'yaml']:
+        raise ValueError("数据格式错误，必须是 json 或 yaml格式")
+    test_data_path = file_path.replace("cases", "testdata").replace(".py", f".{file_type}")
     if os.path.exists(test_data_path):
-        expr_with_testcase = "$..%s" % function_name
-        test_data = json_file_get(test_data_path, expr_with_testcase)
-        return test_data
+        if file_type == 'json':
+            # expr_with_testcase = "$..%s" % function_name
+            test_data = json_file_get(test_data_path)
+            return test_data
+        else:
+            test_data = get_yaml(test_data_path)
+            # return test_data[function_name]
+            return test_data
     else:
         return None
 
+
+def get_yaml(file_path):
+    with open(file_path) as f:
+        crf = f.read()
+    yaml_data = yaml.load(stream=crf, Loader=yaml.FullLoader)
+    return yaml_data

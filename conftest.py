@@ -13,6 +13,8 @@ from _pytest.runner import runtestprotocol
 from _pytest.runner import pytest_runtest_makereport
 from _pytest.fixtures import pytest_fixture_setup as pfs
 
+GDATA = {}
+
 
 @pytest.fixture()
 def some_data():
@@ -169,13 +171,21 @@ def get_reruns_delay(item):
 
 
 def pytest_generate_tests(metafunc):
-    # data driven
     test_module_path = metafunc.module.__file__
     function_name = metafunc.function.__name__
-    test_data = get_testdata(test_module_path, function_name)
-    if test_data:
-        test_data_ = [Dict(i) for i in test_data]
-        metafunc.parametrize("data", test_data_)
+    # 文件级case缓存，一次加载多次使用
+    if test_module_path not in GDATA:
+        # 新增支持yaml数据格式
+        test_data = get_testdata(test_module_path, function_name, file_type='yaml')
+        # test_data = get_testdata(test_module_path, function_name, file_type='json')
+        if test_data:
+            GDATA[test_module_path] = test_data
+    else:
+        test_data = GDATA[test_module_path]
+    # 数据驱动
+    func_test_data = test_data[function_name]
+    test_data_ = [Dict(i) for i in func_test_data]
+    metafunc.parametrize("data", test_data_)
 
 
 def pytest_collection_modifyitems(session, config, items):
